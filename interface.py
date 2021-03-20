@@ -1,4 +1,14 @@
 import pygame
+import time
+
+our_score = 3
+our_wicket = 3
+opp_score = 6
+opp_wicket = 0
+balls = 0.3
+our_curr = 1
+opp_curr = 2
+
 
 pygame.init()
 
@@ -12,6 +22,7 @@ light_red = (200, 0, 0)
 blue = (0, 0, 255)
 red_highlight = (240, 50, 50, 100)
 
+
 main_menu_bg_img = pygame.image.load("background_main_menu.jpeg")
 game_bg_img = pygame.image.load("game_bg.png")
 number1_img = pygame.image.load("number1.png")
@@ -21,7 +32,8 @@ number4_img = pygame.image.load("number4.png")
 number5_img = pygame.image.load("number5.png")
 number6_img = pygame.image.load("number6.png")
 
-game_display = pygame.display.set_mode((1920, 1080))
+# create screen
+game_display = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
 pygame.display.update()
 
 
@@ -65,6 +77,7 @@ def message(size, msg, x_pos, y_pos, col):
 
 def game_loop():
     game_over = False
+    global our_score
     while not game_over:
         game_display.blit(game_bg_img, (0, 0))
         button(50, 50, "BACK", white, off_white)
@@ -72,7 +85,31 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    our_score += 1
+
+        font = pygame.font.SysFont(None, 200)
+        score1 = font.render(str(our_score) + "/" + str(our_wicket), True, white)
+        game_display.blit(score1, (500, 50))
+        score2 = font.render(str(opp_score) + "/" + str(opp_wicket), True, white)
+        game_display.blit(score2, (800, 50))
+        balls_thrown = font.render(str(balls), True, white)
+        game_display.blit(balls_thrown, (1500, 50))
+        font2 = pygame.font.SysFont(None, 500)
+        our_curr_score = font2.render(str(our_curr), True, white)
+        game_display.blit(our_curr_score, (600, 300))
+        opp_curr_score = font2.render(str(opp_curr), True, white)
+        game_display.blit(opp_curr_score, (1100, 300))
+        # seconds = 4
+        # render = font.render(str(seconds), True, white)
+        # game_display.blit(render, (500, 50))
+        # for i in range(seconds):
+        #     render = font.render(str(seconds - i), True, white)
+        #     game_display.blit(render, (500, 50))
+        #     time.sleep(i)
         # message(100, "HAND CRICKET", 500, 50, white)
+
         clock.tick(60)
         pygame.display.update()
 
