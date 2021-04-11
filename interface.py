@@ -40,9 +40,9 @@ game_display=pygame.display.set_mode((0, 0), pygame.FULLSCREEN, pygame.RESIZABLE
 pygame.display.update()
 
 
-def button(x_button, y_button, msg, color1, color2):
+def button(x_button, y_button, msg, wid, color1, color2):
     global val
-    button_width = 300
+    button_width = wid
     button_height = 100
     pygame.draw.rect(game_display, color1, [x_button, y_button, button_width, button_height])
     message(100, msg, x_button, y_button, black)
@@ -67,8 +67,9 @@ def button(x_button, y_button, msg, color1, color2):
         elif click == (1,0,0) and msg == "BATTING":
             val=2
         elif click == (1,0,0) and msg == "BOWLING":
-            val=2
-
+            val=4
+        elif msg=="Let's Start!" and click==(1,0,0):
+            val=4
 
 
 def main_menu():
@@ -77,8 +78,8 @@ def main_menu():
     game_play = False
     while not game_play:
         game_display.blit(main_menu_bg_img, (0, 0))
-        button(0, 0, "PLAY", white, off_white)
-        button(0, 150, "QUIT", white, off_white)
+        button(0, 0, "PLAY", 270, white, off_white)
+        button(0, 150, "QUIT", 270, white, off_white)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -92,23 +93,48 @@ def message(size, msg, x_pos, y_pos, col):
     game_display.blit(render, (x_pos, y_pos))
 
 
-def game_loop():
-    font = pygame.font.SysFont(None, 200)
-    scor = font.render("Toss won!", True, black)
+def game_loop():    
     game_over = False
     global our_score
+    global val
+    x=0
     while not game_over:
         game_display.blit(game_bg_img, (0, 0))
-        button(0, 300, "BACK", white, off_white)
+        button(0, 300, "BACK", 270, white, off_white)
         if(val==0):
-            button(0, 450, "HEADS", white, off_white)
-            button(0, 600, "TAILS", white, off_white)
-        elif(val == 1):
-            x=0
+            button(0, 450, "HEADS", 300, white, off_white)
+            button(0, 600, "TAILS", 300, white, off_white)
+        elif(val == 1 or val == 3):
+            font = pygame.font.SysFont(None, 100)
+            if(val==1):
+                x+=random.randint(0,1)
+                val=3
             if(x==0):                
-                button(300, 450, "BATTING", white, off_white)
-                button(300, 600, "BOWLING", white, off_white)
+                button(300, 450, "BATTING", 350, white, off_white)
+                button(300, 600, "BOWLING", 350, white, off_white)
+                scor = font.render("Toss won!", True, black)
                 game_display.blit(scor, (300, 300))
+            else:
+                sco = font.render("You lost the toss:(", True, black)
+                wut = font.render("You will bowl first.", True, black)
+                game_display.blit(sco, (300, 300))
+                game_display.blit(wut, (300, 400))
+                button(300, 600, "Let's Start!", 380, white, off_white)
+                #val=4
+        elif(val == 2 or val == 4):
+            font = pygame.font.SysFont(None, 200)
+            score1 = font.render(str(our_score) + "/" + str(our_wicket), True, white)
+            game_display.blit(score1, (500, 50))
+            score2 = font.render(str(opp_score) + "/" + str(opp_wicket), True, white)
+            game_display.blit(score2, (800, 50))
+            balls_thrown = font.render(str(balls), True, white)
+            game_display.blit(balls_thrown, (1500, 50))
+            font2 = pygame.font.SysFont(None, 500)
+            our_curr_score = font2.render(str(our_curr), True, white)
+            game_display.blit(our_curr_score, (600, 300))
+            opp_curr_score = font2.render(str(opp_curr), True, white)
+            game_display.blit(opp_curr_score, (1100, 300))
+
                 
             
         for event in pygame.event.get():
@@ -119,7 +145,7 @@ def game_loop():
                 if event.key == pygame.K_UP:
                     our_score += 1
 
-        font = pygame.font.SysFont(None, 200)
+        '''font = pygame.font.SysFont(None, 200)
         score1 = font.render(str(our_score) + "/" + str(our_wicket), True, white)
         game_display.blit(score1, (500, 50))
         score2 = font.render(str(opp_score) + "/" + str(opp_wicket), True, white)
@@ -130,7 +156,7 @@ def game_loop():
         our_curr_score = font2.render(str(our_curr), True, white)
         game_display.blit(our_curr_score, (600, 300))
         opp_curr_score = font2.render(str(opp_curr), True, white)
-        game_display.blit(opp_curr_score, (1100, 300))
+        game_display.blit(opp_curr_score, (1100, 300))'''
         
         clock.tick(120)
         pygame.display.update()
