@@ -28,101 +28,86 @@ pygame.init()
 
 
 def cameraInput():
-    print("aaya")
-    with mp_hands.Hands(
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5) as hands:  
-        print("aaya")  
+    with mp_hands.Hands(min_detection_confidence=0.5,min_tracking_confidence=0.5) as hands:  
         while cap.isOpened():
             success, image = cap.read()
             if not success:
                 print("Ignoring empty camera frame.")
-                # If loading a video, use 'break' instead of 'continue'.
                 continue
-            print("Non empty camera frame?")
-            # Flip the image horizontally for a later selfie-view display, and convert
-            # the BGR image to RGB.
             image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-            # To improve performance, optionally mark the image as not writeable to
-            # pass by reference.
             global cameradone
             image.flags.writeable = False
             results = hands.process(image)
             image_height, image_width, _ = image.shape
-
-            # Draw the hand annotations on the image.
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-            #Counting fingers visible in the frame
             global count
             count = 0
-            
+            val=0
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
                     # Index finger  
                     if(hand_landmarks.landmark[5].y > hand_landmarks.landmark[6].y and hand_landmarks.landmark[7].y > hand_landmarks.landmark[8].y ):
-                        count+=1
+                        val+=1
 
                     # thumbR
                     if(hand_landmarks.landmark[1].x > hand_landmarks.landmark[2].x and hand_landmarks.landmark[3].x > hand_landmarks.landmark[4].x  and hand_landmarks.landmark[2].y > hand_landmarks.landmark[3].y and hand_landmarks.landmark[3].y > hand_landmarks.landmark[4].y):
-                        count+=1
+                        val+=1
                     #Thumb L
                     if(hand_landmarks.landmark[1].x < hand_landmarks.landmark[2].x and hand_landmarks.landmark[3].x < hand_landmarks.landmark[4].x  and hand_landmarks.landmark[2].y > hand_landmarks.landmark[3].y and hand_landmarks.landmark[3].y > hand_landmarks.landmark[4].y):
-                        count+=1        
+                        val+=1        
                     # Middle finger
                     if(hand_landmarks.landmark[9].y > hand_landmarks.landmark[10].y and hand_landmarks.landmark[11].y > hand_landmarks.landmark[12].y ):
-                        count+=1        
+                        val+=1        
 
                     #Ring finger
                     if(hand_landmarks.landmark[13].y > hand_landmarks.landmark[14].y and hand_landmarks.landmark[15].y > hand_landmarks.landmark[16].y ):
-                        count+=1
+                        val+=1
 
                     #Little finger
                     if(hand_landmarks.landmark[17].y > hand_landmarks.landmark[18].y and hand_landmarks.landmark[19].y > hand_landmarks.landmark[20].y ):
-                        count+=1
+                        val+=1
+                    count=val
                     mp_drawing.draw_landmarks(
                         image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            #print(count)   
-            #count =0 
             image = cv2.putText(image, str(count), (50, 45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
             cv2.imshow('Hands', image)
             #print(results.multi_hand_landmarks.landmark(10).y, results.multi_hand_landmarks[11].y, results.multi_hand_landmarks[12].y )
             if cameradone or (cv2.waitKey(5) & 0xFF == 27):
                 break
-    print("gaya")
+    #print("gaya")
 
 t1 = threading.Thread(target=cameraInput, name='t1')
-t1.start()
+
 
 def user_bats_first(lives,overs):
-    fot = pygame.font.SysFont(None, 70)
-    disp = fot.render("First Innings start!", True, white)
-    game_display.blit(disp, (300, 20))
-    num_overs=0
+    fot = pygame.font.SysFont(None, 40)
+    '''disp = fot.render("First Innings start!", True, white)
+    game_display.blit(disp, (300, 20))'''
+    num_overs=1
     global count
     target=0
     while(num_overs<overs):
         balls=1
+        st=220
         while(balls<=6):
             print("{:.1f}".format(num_overs+balls/10))
-
-            print("Wickets: "+str(lives))
-            print("Current Runs: "+str(target))
-            #user_num=int(input("Enter num bw 1 to 6: "))
-            #pygame.time.delay(2)
-            pygame.time.delay(2)
+            pygame.time.wait(1000)
             user_num = count
             computer_num=random.choice([1,2,3,4,5,6])
-            print("Computer num: "+str(computer_num))
-
+            disp = fot.render("0."+str(balls)+" Batter (you): "+str(user_num)+"  Bowler: "+str(computer_num), True, white)
+            game_display.blit(disp, (300, st))            
+            pygame.display.update()
+            st+=40
             if(user_num==computer_num):
                     lives=lives-1
-                    print("Out!Wicket lost")
-                    pygame.time.delay(2)
+                    #print("Out!Wicket lost")
+                    disp=fot.render("OUT!", True, white)
+                    game_display.blit(disp, (570, st-40))
+
+                    pygame.display.update()
+                    pygame.time.wait(200)
                     if(lives<=0):
-                        print("Innings Complete!")
-                        pygame.time.delay(2)
                         return target
             else:
                 target+=user_num
@@ -133,10 +118,12 @@ def user_bats_first(lives,overs):
 
 
 def user_bowls_first(lives,overs):
+    fot = pygame.font.SysFont(None, 40)
     pygame.event.get()
-    num_overs=0
+    num_overs=1
     global count
     target=0
+    st=220
     while(num_overs<overs):
         balls=1
         while(balls<=6):
@@ -144,20 +131,26 @@ def user_bowls_first(lives,overs):
             print("Wickets: "+str(lives))
             print("Current Runs: "+str(target))
             #user_num=int(input("Enter num bw 1 to 6: "))
-            pygame.time.delay(2)
+            pygame.time.wait(1000)
             user_num=count
             #user_num = count
             computer_num=random.choice([1,2,3,4,5,6])
-            print("Computer num: "+str(computer_num))
-            pygame.time.delay(2)
-
+            disp = fot.render("0."+str(balls)+" Bowler (you): "+str(user_num)+"  Batter: "+str(computer_num), True, white)
+            game_display.blit(disp, (300, st))
+            pygame.display.update()
+            pygame.time.wait(1000)
+            st+=40
             if(user_num==computer_num):
                 lives=lives-1
-                print("Out!Wicket lost")
-                pygame.time.delay(2)
+                disp=fot.render("WICKET!", True, white)
+                pygame.display.update()
+                game_display.blit(disp, (570, st-40))
+
+                pygame.display.update()
+                pygame.time.wait(200)
                 if(lives<=0):
-                    print("Innings Complete!")
-                    pygame.time.delay(2)
+                    #print("Innings Complete!")
+                    #pygame.time.wait(2)
                     return target
             else:
                 target+=computer_num
@@ -167,89 +160,89 @@ def user_bowls_first(lives,overs):
     return target
 
 def user_bats_second(lives,overs,limit):
-    num_overs=0
+    fot = pygame.font.SysFont(None, 40)
+    num_overs=1
     global count
     target=0
     while(num_overs<overs):
         balls=1
+        st=500
         while(balls<=6):
-            print("{:.1f}".format(num_overs+balls/10))
-            print("Wickets: "+str(lives))
-            print("Current Runs: "+str(target))
             #user_num=int(input("Enter num bw 1 to 6: "))
-            pygame.time.delay(2)
+            pygame.time.wait(1000)
             user_num = count
             computer_num=random.choice([1,2,3,4,5,6])
-            print("Computer num: "+str(computer_num))
-
+            disp = fot.render("0."+str(balls)+" Batter (you): "+str(user_num)+"  Bowler: "+str(computer_num), True, white)
+            game_display.blit(disp, (300, st))            
+            pygame.display.update()
+            st+=40
             if(user_num==computer_num):
                     lives=lives-1
-                    print("Out!Wicket lost")
-                    pygame.time.delay(2)
+                    disp=fot.render("OUT!", True, white)
+                    game_display.blit(disp, (570, st-40))
+                    pygame.display.update()
+                    pygame.time.wait(200)
                     if(lives<=0):
-                        print("You lost the match!")
-                        print("You lost by "+str(limit-target)+" runs!")
-                        pygame.time.delay(2)
+                        #print("You lost the match!")
+                        #print("You lost by "+str(limit-target)+" runs!")
+                        #pygame.time.wait(2)
                         return 0
 
             else:
                 target+=user_num
             if(target>limit):
-                print("You won!")
-                print("You won by "+str(lives)+" wickets!")
-                pygame.time.delay(2)
+                #print("You won!")
+                #print("You won by "+str(lives)+" wickets!")
+                #pygame.time.wait(2)
                 return 1
             balls=balls+1
         num_overs+=1
     print("You lost by "+str(limit-target)+" runs!")
-    pygame.time.delay(2)
+    #pygame.time.wait(2)
     return 0
 
 def user_balls_second(lives,overs,limit):
+    fot = pygame.font.SysFont(None, 40)
     num_overs=0
     target=0
+    st=500
     while(num_overs<overs):
         balls=1
         while(balls<=6):
-            print("{:.1f}".format(num_overs+balls/10))
-            print("Wickets: "+str(lives))
-            print("Current Runs: "+str(target))
             #user_num=int(input("Enter num bw 1 to 6: "))
-            pygame.time.delay(2)
+            pygame.time.wait(2000)
             user_num = count
             computer_num=random.choice([1,2,3,4,5,6])
-            print("Computer num: "+str(computer_num))
-
+            disp = fot.render("0."+str(balls)+" Bowler (you): "+str(user_num)+"  Batter: "+str(computer_num), True, white)
+            game_display.blit(disp, (300, st))
+            pygame.display.update()
             if(user_num==computer_num):
                     lives=lives-1
-                    print("Out!Wicket lost")
-                    pygame.time.delay(2)
+                    #print("Out!Wicket lost")
+                    disp=fot.render("WICKET!", True, white)
+                    game_display.blit(disp, (570, st-40))
+
+                    pygame.display.update()
+                    pygame.time.wait(200)
                     if(lives<=0):
-                        print("You won the match!")
-                        print("You won by "+str(limit-target)+" runs!")
-                        pygame.time.delay(2)
+                        #print("You won the match!")
+                        #print("You won by "+str(limit-target)+" runs!")
+                        #pygame.time.wait(2)
                         return 1 
             else:
                 target+=computer_num
             if(target>limit):
                 print("You lost!")
                 print("You lost by "+str(lives)+" wickets!")
-                pygame.time.delay(2)
+                #pygame.time.wait(2)
                 return 0
 
             balls=balls+1
         num_overs+=1
     print("You won the match!")
     print("You won by "+str(limit-target)+" runs!")
-    pygame.time.delay(2)
+    #pygame.time.wait(2)
     return 1
-
-#if __name__ == "__main__":
-    #global val
-    
-
-
-
 
 clock = pygame.time.Clock()
 
@@ -264,12 +257,6 @@ red_highlight = (240, 50, 50, 100)
 
 main_menu_bg_img = pygame.image.load("background_main_menu.jpeg")
 game_bg_img = pygame.image.load("game_bg.png")
-number1_img = pygame.image.load("number1.png")
-number2_img = pygame.image.load("number2.png")
-number3_img = pygame.image.load("number3.png")
-number4_img = pygame.image.load("number4.png")
-number5_img = pygame.image.load("number5.png")
-number6_img = pygame.image.load("number6.png")
 
 # create screen
 #game_display = pygame.display.set_mode((1600, 1000), pygame.RESIZABLE)
@@ -291,6 +278,9 @@ def button(x_button, y_button, msg, wid, color1, color2):
         if click == (1, 0, 0) and msg == "PLAY":
             game_loop()
         elif click == (1, 0, 0) and msg == "QUIT":
+            cameradone=True
+            cap.release()
+            t1.join()
             pygame.quit()
             quit()
         elif click == (1, 0, 0) and msg == "BACK":
@@ -307,7 +297,6 @@ def button(x_button, y_button, msg, wid, color1, color2):
             val=2
         elif msg=="Let's Start!" and click==(1,0,0):
             val=4
-
 
 def main_menu():
     global val
@@ -337,7 +326,8 @@ def game_loop():
     x=0
     while not game_over:
         game_display.blit(game_bg_img, (0, 0))
-        button(0, 300, "BACK", 270, white, off_white)
+        if(val!=2 and val!=4):
+            button(0, 300, "BACK", 270, white, off_white)
         if(val==0):
             button(0, 450, "HEADS", 300, white, off_white)
             button(0, 600, "TAILS", 300, white, off_white)
@@ -359,58 +349,80 @@ def game_loop():
                 button(300, 600, "Let's Start!", 380, white, off_white)
                 #val=4
         elif(val == 2 or val == 4):
-            font = pygame.font.SysFont(None, 200)
-            score1 = font.render(str(our_score) + "/" + str(our_wicket), True, white)
-            game_display.blit(score1, (500, 50))
-            score2 = font.render(str(opp_score) + "/" + str(opp_wicket), True, white)
-            game_display.blit(score2, (800, 50))
-            balls_thrown = font.render(str(balls), True, white)
-            game_display.blit(balls_thrown, (1500, 50))
-            font2 = pygame.font.SysFont(None, 500)
-            our_curr_score = font2.render(str(our_curr), True, white)
-            game_display.blit(our_curr_score, (600, 300))
-            opp_curr_score = font2.render(str(opp_curr), True, white)
-            game_display.blit(opp_curr_score, (1100, 300))
             lives=3
             overs=2 
             result=0
-            if(val==2):
+            if(val==4):
                 fot = pygame.font.SysFont(None, 70)
                 disp = fot.render("First Innings start!", True, white)
                 game_display.blit(disp, (300, 20))
-                #print()
-                #target=user_bowls_first(lives,overs)
-                '''print(str(target)+" runs scored by computer!")
-                print(str(target+1)+" runs to win!")
-                print("Second Innings start!")
-                result=user_bats_second(lives,overs,target)'''
-                val=7
-            elif(val==4):
-                fot = pygame.font.SysFont(None, 70)
-                disp = fot.render("First Innings start!", True, white)
-                game_display.blit(disp, (300, 20))
-                #print("aaya 1")
-                #pygame.time.delay(2)
-                #print("aaya 2")
+                pygame.display.update()
+                nclock = pygame.time.get_ticks()
+                elock=nclock+500
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
                 target=user_bats_first(lives,overs)
-                #target=0
-                disp2 = fot.render("Runs to defend: "+str(target), True, white)
-                game_display.blit(disp2, (300, 20))
-                #print(str(target)+" runs scored by you!")
-                #print(str(target+1)+" runs to protect!")
-                '''disp = fot.render("Second Innings start!", True, white)
-                game_display.blit(disp, (300, 20))
+                disp = fot.render("Runs to defend: "+str(target), True, white)
+                game_display.blit(disp, (300, 70))
+
+                disp = fot.render("Second Innings start!", True, white)
+                game_display.blit(disp, (300, 120))
+                pygame.display.update()
+                nclock = pygame.time.get_ticks()
+                elock=nclock+500
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
                 result=user_balls_second(lives,overs,target)
                 if(result==1):
-                    print("Congratulations!")
+                    disp = fot.render("CONGRATULATIONS, YOU WON!", True, white)
                 else:
-                    print("Better luck next time!")'''
-            #print("Lesee")
-                val=7
-            elif val == 7:
-                t1.join()
-                cap.release()
-            
+                    disp = fot.render("Better luck next time!", True, white)
+                game_display.blit(disp, (300, 170))
+                pygame.display.update();
+                nclock = pygame.time.get_ticks()
+                elock=nclock+1000
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
+                game_over=True
+                print("aaya")
+                val=0
+                #break
+            elif(val==2):
+                fot = pygame.font.SysFont(None, 70)
+                disp = fot.render("First Innings start!", True, white)
+                
+                game_display.blit(disp, (300, 20))
+                pygame.display.update()
+                nclock = pygame.time.get_ticks()
+                elock=nclock+500
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
+                target=user_bowls_first(lives,overs)
+                disp = fot.render("Runs to chase: "+str(target+1), True, white)
+                game_display.blit(disp, (300, 70))
+
+                disp = fot.render("Second Innings start!", True, white)
+                game_display.blit(disp, (300, 120))
+                pygame.display.update()
+                nclock = pygame.time.get_ticks()
+                elock=nclock+500
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
+                result=user_bats_second(lives,overs,target)
+                if(result==1):
+                    disp = fot.render("CONGRATULATIONS, YOU WON!", True, white)
+                else:
+                    disp = fot.render("Better luck next time!", True, white)
+                game_display.blit(disp, (300, 170))
+                pygame.display.update();
+                nclock = pygame.time.get_ticks()
+                elock=nclock+1000
+                while(pygame.time.get_ticks()<elock):
+                    mj=10
+                game_over=True
+                print("aaya")
+                val=0                
+                #break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -418,13 +430,18 @@ def game_loop():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     our_score += 1
-
-        
-        
         clock.tick(120)
         pygame.display.update()
+        print(game_over)
+    print("Aur idhar?")
 
-
+print("start")
+t1.start()
 main_menu()
+print("UHHH")
+cameradone=True
+cap.release()
+t1.join()
+print("UH HUH")
 pygame.quit()
 quit()
